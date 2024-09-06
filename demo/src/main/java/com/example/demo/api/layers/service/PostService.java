@@ -37,12 +37,17 @@ public class PostService {
         Post post = Post.builder()
                 .name(postSaveDTO.getName())
                 .postCategory(postSaveDTO.getPostCategory())
+                .content(postSaveDTO.getContent())
                 .testUser(testUser)
                 .build();
 
         postRepository.save(post);
 
-        PostDTO postDTO = new PostDTO(post);
-        return postDTO;
+        return new PostDTO(post);
+    }
+
+    public PostDTO save(Post post) {
+        postRepository.save(post);
+        return new PostDTO(post);
     }
 }

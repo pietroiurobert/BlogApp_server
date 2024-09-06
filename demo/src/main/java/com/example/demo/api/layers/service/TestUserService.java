@@ -6,6 +6,9 @@ import com.example.demo.api.layers.repository.TestUserRepository;
 import com.example.demo.api.model.Post;
 import com.example.demo.api.model.TestUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,11 +18,13 @@ import java.util.List;
 public class TestUserService {
     private final TestUserRepository testUserRepository;
     private final PostRepository postRepository;
+    private final AuthenticationManager authManager;
 
     @Autowired
-    public TestUserService(TestUserRepository testUserRepository, PostRepository postRepository) {
+    public TestUserService(TestUserRepository testUserRepository, PostRepository postRepository, AuthenticationManager authManager) {
         this.testUserRepository = testUserRepository;
         this.postRepository = postRepository;
+        this.authManager = authManager;
     }
 
     public List<TestUserDTO> findAllDTO() {
@@ -48,6 +53,16 @@ public class TestUserService {
     }
 
     public TestUserDTO findBy(Long ID) {
-        return new TestUserDTO(testUserRepository.getById(ID));
+        return new TestUserDTO(testUserRepository.getById(ID)); // getById is deprecated. needs to be replaced
+    }
+
+    public String verify(TestUser testUser) {
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(testUser.getUsername(), testUser.getPassword());
+        Authentication authentication = authManager.authenticate(authenticationToken);
+        if (authentication.isAuthenticated()) {
+            return "Authenticated"; // replace with token
+        } else {
+            return "Not Authenticated";
+        }
     }
 }
