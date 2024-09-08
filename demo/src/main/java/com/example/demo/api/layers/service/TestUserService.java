@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,12 +20,15 @@ public class TestUserService {
     private final TestUserRepository testUserRepository;
     private final PostRepository postRepository;
     private final AuthenticationManager authManager;
+    private final JWTService jwtService;
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Autowired
-    public TestUserService(TestUserRepository testUserRepository, PostRepository postRepository, AuthenticationManager authManager) {
+    public TestUserService(TestUserRepository testUserRepository, PostRepository postRepository, AuthenticationManager authManager, JWTService jwtService) {
         this.testUserRepository = testUserRepository;
         this.postRepository = postRepository;
         this.authManager = authManager;
+        this.jwtService = jwtService;
     }
 
     public List<TestUserDTO> findAllDTO() {
@@ -48,6 +52,7 @@ public class TestUserService {
         postRepository.saveAll(posts);
 
         // save the user
+        testUser.setPassword(encoder.encode(testUser.getPassword()));
         testUserRepository.save(testUser);
         return new TestUserDTO(testUser);
     }
@@ -60,7 +65,7 @@ public class TestUserService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(testUser.getUsername(), testUser.getPassword());
         Authentication authentication = authManager.authenticate(authenticationToken);
         if (authentication.isAuthenticated()) {
-            return "Authenticated"; // replace with token
+            return jwtService.generateToken(testUser.getUsername()); // replace with token
         } else {
             return "Not Authenticated";
         }
