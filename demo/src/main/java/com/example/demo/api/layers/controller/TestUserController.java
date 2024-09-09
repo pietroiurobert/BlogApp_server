@@ -1,6 +1,7 @@
 package com.example.demo.api.layers.controller;
 
 import com.example.demo.api.DTO.TestUser.TestUserDTO;
+import com.example.demo.api.layers.service.JWTService;
 import com.example.demo.api.layers.service.TestUserService;
 import com.example.demo.api.model.TestUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ import java.util.List;
 public class TestUserController {
 
     private final TestUserService testUserService;
+    private JWTService jwtService;
 
     @Autowired
-    public TestUserController(TestUserService testUserService) {
+    public TestUserController(TestUserService testUserService, JWTService jwtService) {
         this.testUserService = testUserService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping(value = "/findAll", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -35,5 +38,12 @@ public class TestUserController {
     public ResponseEntity<?> login(@RequestBody TestUser testUser) {
         String verify = testUserService.verify(testUser);
         return ResponseEntity.status(200).body(verify);
+    }
+
+    @GetMapping(value="/profile", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> profile(@RequestHeader("Authorization") String header) {
+        String token = header.substring(7);
+        TestUserDTO testUserDTO = testUserService.findByToken(token);
+        return testUserDTO != null ? ResponseEntity.ok(testUserDTO) : ResponseEntity.notFound().build();
     }
 }

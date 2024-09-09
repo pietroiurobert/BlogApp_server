@@ -61,6 +61,12 @@ public class TestUserService {
         return new TestUserDTO(testUserRepository.getById(ID)); // getById is deprecated. needs to be replaced
     }
 
+    public TestUserDTO findByToken(String token) {
+        String username = jwtService.extractUserName(token);
+        TestUser testUser = testUserRepository.findByUsername(username);
+        return new TestUserDTO(testUser);
+    }
+
     public String verify(TestUser testUser) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(testUser.getUsername(), testUser.getPassword());
         Authentication authentication = authManager.authenticate(authenticationToken);
